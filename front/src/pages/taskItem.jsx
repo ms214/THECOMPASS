@@ -3,12 +3,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 
-export default function TaskItem({task, handleDelete, inThreeDays=false, inPast=false, isComplete=false}){
+export default function TaskItem({task, handleEdit, handleDelete, inThreeDays=false, inPast=false, isComplete=false}){
     const navigate = useNavigate();
 
-    const handleEdit = (id) => {
-        navigate(`${id}`);
-    }
     if(inPast) //마감일이 지난
         return <Grid2 size={{md:6, xs: 12}} sx={{padding: '10px'}}>
                     <Box sx={{width: '100%', margin: '10px',background: '#ffc150'}}>

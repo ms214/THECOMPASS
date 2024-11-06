@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import TaskItem from "./taskItem";
 
 const projects = [{id: 1, name: '기본프로젝트'}, {id: 2, name: '서브프로젝트'}, {id: 3, name: '3번프로젝트'}];
-const originTasks = [
+let originTasks = [
     {tid: 1, name: 't1', content: 'content n1', priority: 1, date: '2024-11-05', type: 'during'}, // 지나고 끝나지 않음. 빨간색
     {tid: 2, name: 't2', content: 'content n2', priority: 2, date: '2024-11-08', type: 'during'}, //3일 이내 + 끝나지 않음 노란색
     {tid: 3, name: 't3', content: 'content n3', priority: 3, date: '2024-11-10', type: 'during'}, // 3일 이후 + 끝나지 않음.
@@ -16,23 +16,22 @@ export default function ProjectDetail(){
     const navigate = useNavigate();
     const {state} = useLocation();
     const project = projects.filter((a) => a.id === Number(params.pid))[0];
+    if(state !== null){
+        originTasks = state.listTask;
+    }
     originTasks.sort((a, b) => a.priority - b.priority ) //sort
     const [tasks, setTask] = useState(originTasks);
     const [filter, setFilter] = useState(null);
 
-    if(state !== null) {
-        state.sort((a, b) => a.priority - b.priority )
-        setTask(state);
-    }
     const handleDelete = (id) => {
         setTask(tasks.filter((a)=> a.tid !== id));
     }
     const handleEdit = (id) => {
-        navigate(`${id}`);
+        navigate(`${id}`, {state: {listTask: tasks, editId: id}});
     }
 
     const handleAddTask = () => {
-        navigate(`/${params.pid}/task/add`, {state: tasks});
+        navigate(`/${params.pid}/task/add`, {state: {listTask: tasks}});
     }
 
     const handleFilter = (type) => {
@@ -42,7 +41,6 @@ export default function ProjectDetail(){
             setFilter(type);
         else setFilter(null);
     }
-
 
     return <Container sx={{padding: '20px'}}>
         <Typography variant="h2">{project.name}</Typography>
@@ -58,24 +56,24 @@ export default function ProjectDetail(){
                     const dt = new Date();
                     const targetDate = new Date(task.date);
                     if((targetDate.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) > 3 && task.type !== 'complete') // 3일보다 많이 남음
-                        return <TaskItem task={task} handleDelete={handleDelete} />;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit}/>;
                     else if((targetDate.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) < 0 && task.type !== 'complete') // 마감일 임박 + 끝나지 않음
-                        return <TaskItem task={task} handleDelete={handleDelete} inThreeDays={true}/>;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit} inThreeDays={true}/>;
                     else if((targetDate.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) <= 3  && task.type !== 'complete') // 마감일 지남 + 끝나지 않음
-                        return <TaskItem task={task} handleDelete={handleDelete} inPast={true}/>;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit} inPast={true}/>;
                     else
-                        return <TaskItem task={task} handleDelete={handleDelete} isComplete={true}/>;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit} isComplete={true}/>;
                 }else if(task.type === filter){
                     const dt = new Date();
                     const targetDate = new Date(task.date);
                     if((targetDate.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) >= 3) // 3일보다 많이 남음
-                        return <TaskItem task={task} handleDelete={handleDelete} />;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit}/>;
                     else if((targetDate.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) < 0 && task.type !== 'complete') // 3일이내로 남음
-                        return <TaskItem task={task} handleDelete={handleDelete} inThreeDays={true}/>;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit} inThreeDays={true}/>;
                     else if((targetDate.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) <= 3  && task.type !== 'complete') // 마감일 지남
-                        return <TaskItem task={task} handleDelete={handleDelete} inPast={true}/>;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit} inPast={true}/>;
                     else
-                        return <TaskItem task={task} handleDelete={handleDelete} isComplete={true}/>;
+                        return <TaskItem task={task} handleDelete={handleDelete} handleEdit={handleEdit} isComplete={true}/>;
                 }else return null;
             })           
         }
